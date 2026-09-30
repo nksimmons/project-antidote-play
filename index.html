@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#244a3d">
+  <meta name="description" content="Good games. No strings. A free, open-source arcade that respects your time and privacy. Play 2048 anywhere, even offline.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./games/2048/styles.css">
+  <title>Antidote — Good games. No strings.</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="site-wrap">
+    <header class="site-header">
+      <a class="brand" href="#/library" aria-label="Antidote home"><img src="./icons/favicon.svg" width="38" height="38" alt=""><span>antidote<span class="brand-period">.</span></span></a>
+      <nav aria-label="Main navigation"><a href="#/library" data-nav="library">The arcade</a><a href="#/about" data-nav="about">Our philosophy</a></nav>
+      <button class="install-button" id="install-button"><span aria-hidden="true">↧</span> <span>Install arcade</span></button>
+    </header>
+    <main id="main" tabindex="-1"></main>
+    <footer class="site-footer"><span class="footer-wordmark">Small games. Big respect.</span><span>NO ADS <span aria-hidden="true">/</span> NO TRACKING <span aria-hidden="true">/</span> JUST PLAY</span><span class="connection" id="connection" role="status"><i></i> Preparing offline play</span></footer>
+  </div>
+  <dialog id="install-dialog" class="info-dialog"><form method="dialog"><button class="close-dialog" aria-label="Close">×</button></form><span class="eyebrow">YOUR POCKET ARCADE</span><h2>Make yourself at home.</h2><p>Install Antidote for a full-screen experience, right from your home screen.</p><p>On iPhone or iPad, open this site in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android or desktop, look for <strong>Install app</strong> or <strong>Add to Home screen</strong> in your browser menu.</p><p class="subtle">Once the footer says “Ready for offline play,” this whole release is saved on your device. Browser storage can be cleared by your device or browser.</p></dialog>
+  <noscript><p class="noscript">Enable JavaScript to play. All game logic runs on your device.</p></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
