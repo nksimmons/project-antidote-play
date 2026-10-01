@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A free, private, offline-first arcade. No runtime dependencies.",
+  "description": "A free, private, offline-first arcade. Locally bundled multiplayer libraries; no runtime CDN.",
   "license": "MIT",
   "scripts": {
     "dev": "python3 -m http.server 4173 --bind 127.0.0.1",

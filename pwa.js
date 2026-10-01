@@ -82,7 +82,7 @@ export function createUpdateManager({ serviceWorker, scriptURL, onChange, reload
   };
 }
 
-export function setupPWA() {
+export function setupPWA({ beforeReload = () => true } = {}) {
   const host = document.createElement('aside');
   host.className = 'pwa-updates';
   host.setAttribute('aria-label', 'Arcade updates');
@@ -114,7 +114,10 @@ export function setupPWA() {
     serviceWorker: navigator.serviceWorker,
     scriptURL: new URL('./sw.js', import.meta.url).href,
     onChange: render,
-    reload: () => location.reload(),
+    reload: () => {
+      if (beforeReload()) location.reload();
+      else render({ ...current, message: 'Update installed. Finish this game, then reload.' });
+    },
   });
   button.addEventListener('click', () => current.waiting ? manager.apply() : manager.check());
   let lastCheck = 0;

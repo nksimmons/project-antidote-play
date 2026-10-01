@@ -839,3 +839,11 @@ dialog::backdrop {
     scroll-behavior:auto!important;
   }
 }
+
+/* The party games retain their own interfaces beyond the arcade launcher. */
+.art-words { background:#e0e8da; } .art-stones { background:#eadac0; }
+.word-art { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; width:200px; transform:rotate(-6deg); }
+.word-art span { display:grid; place-items:center; aspect-ratio:1; background:#faf8ef; color:#345c42; font:bold 27px Georgia,serif; border-radius:5px; box-shadow:0 3px #b4c3a9; }
+.stones-art { display:grid; grid-template-columns:repeat(5,1fr); width:200px; height:200px; background:linear-gradient(#997e55 1px,transparent 1px),linear-gradient(90deg,#997e55 1px,transparent 1px); background-size:40px 40px; background-position:20px 20px; transform:rotate(6deg); }
+.stones-art i { width:29px; height:29px; border-radius:50%; place-self:center; } .stones-art .dark { background:#234a37; box-shadow:1px 3px #102c20; } .stones-art .light { background:#fff9eb; box-shadow:1px 3px #b5a484; }
+.filters { flex-wrap:wrap; }

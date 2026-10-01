@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { readFile, access } from 'node:fs/promises';
+import { readFile, access, readdir } from 'node:fs/promises';
 
 const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
 const version = source.match(/const VERSION = '([^']+)'/)[1];
@@ -41,7 +41,15 @@ test('install precaches every shipped asset using deployment-relative URLs', asy
   let task;
   sw.events.install({ waitUntil: promise => { task = promise; } });
   await task;
-  assert.equal(sw.requests.length, 30);
+  const cached = new Set(sw.requests.map(r => new URL(r.url).pathname.replace('/arcade/', '')));
+  async function checkDirectory(path) {
+    for (const entry of await readdir(new URL(`../${path}`, import.meta.url), { withFileTypes: true })) {
+      const file = `${path}/${entry.name}`;
+      if (entry.isDirectory()) await checkDirectory(file);
+      else assert.ok(cached.has(file), `Missing offline asset: ${file}`);
+    }
+  }
+  await checkDirectory('games');
   for (const request of sw.requests) {
     assert.equal(request.cache, 'reload');
     assert.ok(request.url.startsWith('https://example.test/arcade/'));

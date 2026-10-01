@@ -1,10 +1,10 @@
 /* npm run build stamps this automatically. Bump manually for source-only deploys. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `antidote-${encodeURIComponent(BASE.pathname)}-`;
 const CACHE = `${PREFIX}${VERSION}`;
 const ASSETS = [
-  './', 'index.html', 'styles.css', 'app.js', 'pwa.js', 'manifest.json',
+  './', 'index.html', 'styles.css', 'app.js', 'pwa.js', 'manifest.json', 'THIRD_PARTY_NOTICES.txt',
   'icons/favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'icons/maskable-512.png', 'games/2048/', 'games/2048/index.html',
   'games/2048/styles.css', 'games/2048/engine.js', 'games/2048/game.js',
@@ -14,6 +14,29 @@ const ASSETS = [
   'games/sudoku/engine.js', 'games/sudoku/game.js', 'games/sudoku/standalone.js',
   'games/blocks/', 'games/blocks/index.html', 'games/blocks/styles.css',
   'games/blocks/engine.js', 'games/blocks/game.js', 'games/blocks/standalone.js',
+  "games/lexitrack/",
+  "games/lexitrack/css/style.css",
+  "games/lexitrack/index.html",
+  "games/lexitrack/js/combined.js",
+  "games/lexitrack/js/engine.js",
+  "games/lexitrack/js/player.js",
+  "games/lexitrack/player.html",
+  "games/lexitrack/words.txt",
+  "games/stones-of-five/",
+  "games/stones-of-five/css/style.css",
+  "games/stones-of-five/index.html",
+  "games/stones-of-five/js/board.js",
+  "games/stones-of-five/js/combined.js",
+  "games/stones-of-five/js/game.js",
+  "games/stones-of-five/js/player.js",
+  "games/stones-of-five/player.html",
+  "games/multiplayer/boot.js",
+  "games/multiplayer/config.js",
+  "games/multiplayer/frame.css",
+  "games/multiplayer/session.js",
+  "games/multiplayer/transport.js",
+  "games/multiplayer/vendor/qrcode.js",
+  "games/multiplayer/vendor/trystero.js",
 ].map(path => new URL(path, BASE).href);
 const PRECACHED = new Set(ASSETS);
 
