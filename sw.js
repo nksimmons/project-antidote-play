@@ -1,5 +1,5 @@
 /* npm run build stamps this automatically. Bump manually for source-only deploys. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `antidote-${encodeURIComponent(BASE.pathname)}-`;
 const CACHE = `${PREFIX}${VERSION}`;
@@ -9,6 +9,11 @@ const ASSETS = [
   'icons/maskable-512.png', 'games/2048/', 'games/2048/index.html',
   'games/2048/styles.css', 'games/2048/engine.js', 'games/2048/game.js',
   'games/2048/standalone.js',
+  'games/shared.js', 'games/shared.css',
+  'games/sudoku/', 'games/sudoku/index.html', 'games/sudoku/styles.css',
+  'games/sudoku/engine.js', 'games/sudoku/game.js', 'games/sudoku/standalone.js',
+  'games/blocks/', 'games/blocks/index.html', 'games/blocks/styles.css',
+  'games/blocks/engine.js', 'games/blocks/game.js', 'games/blocks/standalone.js',
 ].map(path => new URL(path, BASE).href);
 const PRECACHED = new Set(ASSETS);
 

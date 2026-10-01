@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { readFile, access } from 'node:fs/promises';
 
 const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+const version = source.match(/const VERSION = '([^']+)'/)[1];
 function worker({ failInstall = false } = {}) {
   const events = {};
   const deleted = [];
@@ -25,7 +26,7 @@ function worker({ failInstall = false } = {}) {
         addAll: async list => { requests.push(...list); if (failInstall) throw new Error('Network unavailable'); },
         match: async () => cachedResponse,
       }),
-      keys: async () => ['antidote-%2Farcade%2F-v0', 'antidote-%2Farcade%2F-v1', 'antidote-%2Fother%2F-v0', 'unrelated-cache'],
+      keys: async () => ['antidote-%2Farcade%2F-v0', `antidote-%2Farcade%2F-${version}`, 'antidote-%2Fother%2F-v0', 'unrelated-cache'],
       delete: async key => { deleted.push(key); },
     },
     fetch: async () => { network++; return new Response('network'); },
@@ -39,7 +40,7 @@ test('install precaches every shipped asset using deployment-relative URLs', asy
   let task;
   sw.events.install({ waitUntil: promise => { task = promise; } });
   await task;
-  assert.equal(sw.requests.length, 15);
+  assert.equal(sw.requests.length, 29);
   for (const request of sw.requests) {
     assert.equal(request.cache, 'reload');
     assert.ok(request.url.startsWith('https://example.test/arcade/'));

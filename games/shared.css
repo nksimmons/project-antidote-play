@@ -1,0 +1,44 @@
+.arcade-game { padding: 30px 0 45px; }
+.arcade-back { display: inline-block; padding: 6px 0; font-size: 12px; color: var(--muted); }
+.arcade-back:hover { text-decoration: underline; }
+.play-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 65px; max-width: 1050px; margin: 32px auto 0; align-items: center; }
+.play-intro h1 { font-size: clamp(48px, 6vw, 80px); letter-spacing: -4px; margin: 16px 0; }
+.play-intro h1 span { color: #8fa754; }
+.play-tagline { font: italic 28px/1.3 Georgia, serif; }
+.play-instructions { margin-top: 30px; max-width: 315px; font-size: 13px; line-height: 1.8; color: var(--muted); }
+.play-instructions p + p { margin-top: 15px; }
+.play-panel { min-width: 0; width: 100%; max-width: 500px; }
+.play-stats { display: flex; gap: 10px; margin-bottom: 16px; align-items: stretch; }
+.play-stat { background: #e8ebdc; padding: 11px 13px; border-radius: 7px; flex: 1; min-width: 0; }
+.play-stat span { display: block; font: 9px monospace; letter-spacing: .5px; margin-bottom: 7px; }
+.play-stat strong { font-size: 23px; }
+.play-button { border: 1px solid #c7ceba; background: transparent; border-radius: 6px; padding: 11px 13px; font-size: 12px; }
+.play-button:hover { background: #e7ecd9; }
+.play-button:disabled { opacity: .45; }
+.play-button[aria-pressed=true] { background: var(--green); color: white; }
+.play-primary { background: var(--green); color: white; border-color: var(--green); }
+.play-primary:hover { background: #32634e; }
+.play-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.play-message { font-size: 12px; min-height: 34px; line-height: 1.5; margin-top: 12px; color: var(--ink); }
+.play-save { font-size: 10px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+.play-dialog-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+.play-dialog select { display: block; width: 100%; margin-top: 8px; padding: 12px; background: var(--white); border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font: inherit; }
+.play-dialog label { display: block; margin-top: 20px; font-size: 13px; }
+.play-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 900px) {
+  .play-layout { gap: 28px; }
+  .play-intro h1 { font-size: 54px; letter-spacing: -3px; }
+  .play-tagline { font-size: 24px; }
+}
+@media (max-width: 700px) {
+  .arcade-game { padding-top: 20px; }
+  .play-layout { display: flex; flex-direction: column; gap: 22px; margin-top: 20px; }
+  .play-intro { width: 100%; max-width: 500px; }
+  .play-intro h1 { font-size: 48px; margin: 10px 0; }
+  .play-tagline { font-size: 22px; }
+  .play-instructions { max-width: none; margin-top: 15px; font-size: 12px; }
+  .play-instructions p + p { margin-top: 8px; }
+  .play-button { padding: 11px 10px; }
+  .play-stat { padding: 10px; }
+  .play-stat span { font-size: 8px; }
+}

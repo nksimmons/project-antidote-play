@@ -1,0 +1,21 @@
+.sudoku-heading { display: flex; justify-content: space-between; gap: 10px; font: 9px monospace; letter-spacing: .5px; color: var(--muted); margin-bottom: 10px; }
+.sudoku-board { display: grid; grid-template-columns: repeat(9, 1fr); aspect-ratio: 1; border: 2px solid #63795b; border-radius: 5px; overflow: hidden; background: #fdfcf6; }
+.sudoku-board [role=row] { display: contents; }
+.sudoku-cell { border: 0; border-right: 1px solid #d9dfce; border-bottom: 1px solid #d9dfce; background: #fdfcf6; color: #376c49; padding: 0; min-width: 0; font-size: clamp(18px, 2.5vw, 27px); display: grid; place-items: center; position: relative; }
+.sudoku-cell:nth-child(3n) { border-right: 2px solid #63795b; }
+.sudoku-cell:nth-child(9) { border-right: 0; }
+.sudoku-board [role=row]:nth-child(3n) .sudoku-cell { border-bottom: 2px solid #63795b; }
+.sudoku-board [role=row]:last-child .sudoku-cell { border-bottom: 0; }
+.sudoku-cell.given { font-weight: 700; color: #34452d; }
+.sudoku-cell.related { background: #f0f2e6; }
+.sudoku-cell.matching { background: #e2e9cf; }
+.sudoku-cell.selected { background: #d1dfa6; box-shadow: inset 0 0 0 2px #5e7d3c; }
+.sudoku-cell.conflict { color: #923d2b; text-decoration: underline; text-decoration-thickness: 2px; background: #f4ded4; }
+.sudoku-cell.selected.conflict { box-shadow: inset 0 0 0 2px #923d2b; }
+.sudoku-cell:focus-visible { outline: 3px solid #a45224; outline-offset: -3px; z-index: 1; }
+.sudoku-pencil { position: absolute; inset: 3px; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); font: 10px/1 monospace; color: #5d6c50; }
+.sudoku-pencil span { display: grid; place-items: center; }
+.sudoku-keypad { display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; margin-top: 15px; }
+.sudoku-keypad button { padding: 12px 0; font-size: 20px; background: #e8eddb; }
+.sudoku-game .play-toolbar { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
+@media(max-width: 400px) { .sudoku-pencil { font-size: 8px; inset: 2px; } .sudoku-game .play-toolbar .play-button { font-size: 11px; padding-inline: 5px; } }

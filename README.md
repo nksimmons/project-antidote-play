@@ -19,7 +19,8 @@ You can also serve this directory with any static HTTP server. Service workers n
 - Responsive arcade shell with game filters, philosophy page, install guidance, and offline status.
 - Complete 2048 with animated movement, swipe/keyboard/button controls, one-step undo, restart confirmation, win/continue and game-over states.
 - Local saved board and best score, with graceful fallback when browser storage is unavailable.
-- Sudoku and Blocks are clearly marked coming soon, not playable prototypes.
+- Sudoku with unique generated puzzles, three clue-density settings, pencil notes, conflict checks, hints, undo, and a local solved-puzzle count.
+- Blocks with a seven-piece bag, rotation and wall adjustments, landing preview, line scoring, increasing speed, keyboard/touch controls, pause, and a local best score.
 
 ## Structure
 
@@ -30,10 +31,13 @@ icons/                            Local install icons
 games/2048/engine.js               Pure movement and scoring rules
 games/2048/game.js                 Mountable game, controls, saved state
 games/2048/index.html              Standalone game entry point
+games/sudoku/                     Sudoku generator, solver, UI, standalone entry
+games/blocks/                     Falling-block rules, UI, standalone entry
+games/shared.js / shared.css       Storage helpers and common game presentation
 tests/                            Node built-in test suite
 ```
 
-Routes: `#/library`, `#/about`, `#/play/2048`. The standalone game also works at `games/2048/`. Hash routing requires no server rewrite and supports hosting under a subdirectory.
+Routes: `#/library`, `#/about`, `#/play/2048`, `#/play/sudoku`, and `#/play/blocks`. Each game also has a standalone entry at `games/2048/`, `games/sudoku/`, or `games/blocks/`. Hash routing requires no server rewrite and supports hosting under a subdirectory.
 
 ## Publish on GitHub Pages
 
@@ -55,7 +59,7 @@ npm run build
 python3 -m http.server 4174 --bind 127.0.0.1 --directory dist
 ```
 
-GitHub Pages manages its own cache headers; no custom header configuration is required. Installed clients download a new release when the browser checks the service worker; use **Update ready** in the footer when offered. HTTPS is provided by the default `github.io` URL, enabling installation and offline play after the initial load. Sudoku and Blocks remain upcoming; 2048 is playable in this release.
+GitHub Pages manages its own cache headers; no custom header configuration is required. Installed clients download a new release when the browser checks the service worker; use **Update ready** in the footer when offered. HTTPS is provided by the default `github.io` URL, enabling installation and offline play after the initial load. All three games are included in the offline release.
 
 ## Offline and release updates
 
@@ -67,7 +71,11 @@ Deploy `dist/` to an HTTPS static host. Where you control response headers, serv
 
 ## Persistence and accessibility
 
-Only `antidote:2048:save` and `antidote:2048:best` are written to localStorage. Data stays on the device and is removed by clearing site data. Undo applies only to the last move in the current mounted game; the best score never decreases. Simultaneous tabs are independent; the most recently saved board wins.
+Each game writes only its own localStorage keys: `antidote:2048:save` / `:best`, `antidote:sudoku:save` / `:solved`, and `antidote:blocks:save` / `:best`. Data stays on the device and is removed by clearing site data. 2048 remembers one undo step; Sudoku remembers up to 100 edits during the current visit. Best scores never decrease. Simultaneous tabs are independent; the most recently saved board wins. These keys share the site's origin, so copies under different paths on the same origin share saves.
+
+Sudoku validates uniqueness as clues are removed. Easy, medium, and hard target 42, 34, and 28 givens; uniqueness can leave extra clues. These are clue-density settings, not a solver-derived difficulty rating. Checks compare entered values to the unique solution; conflicts are also underlined without needing a check. Hints count toward the current puzzle and solved puzzles are counted once, including assisted completions.
+
+Blocks scores 100/300/500/800 points for clearing 1/2/3/4 lines, multiplied by the current level. Soft drops earn one point per row and hard drops two. A fresh seven-piece bag prevents long piece droughts. The fall interval starts at 850 ms, decreases by 65 ms every 10 lines, and bottoms out at 100 ms. Pieces lock on a blocked downward step; there is no separate lock delay. Leaving the page, switching windows, or opening a dialog pauses play. Reloaded games always start paused.
 
 The UI includes keyboard focus indicators, semantic navigation, reduced-motion support, labeled movement buttons, a board description with row values, and polite move/result announcements. Swiping suppresses scrolling only on the board. No motion, sound, network access, or install prompt is required to play after assets load.
 
@@ -79,5 +87,7 @@ The UI includes keyboard focus indicators, semantic navigation, reduced-motion s
 4. In browser developer tools, go offline, reload the launcher and standalone game, and play.
 5. Check mobile widths, zoom, keyboard navigation, and reduced motion.
 6. Bump the worker version and reload online; verify the update button and preserved game state.
+7. Play Sudoku using notes, erase, undo, check, and hints; confirm completion increments the solved count only once after reload.
+8. Play Blocks using movement, rotation, soft/hard drops, and pause; reload to confirm the board and best score, then check a game-over restart.
 
 MIT licensing permits reuse, including commercial forks. The project's own zero-monetization commitment remains a project policy.

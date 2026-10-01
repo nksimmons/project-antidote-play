@@ -1,0 +1,34 @@
+.blocks-game .play-layout { grid-template-columns: 1fr 1fr; max-width: 950px; }
+.blocks-game .play-panel { max-width: 360px; }
+.blocks-next { margin-top: 28px; }
+#blocks-next { display: grid; grid-template-columns: repeat(var(--preview-size), 23px); grid-auto-rows: 23px; gap: 3px; margin-top: 13px; }
+#blocks-next span { border-radius: 3px; }
+.blocks-stage { position: relative; width: min(100%, 32svh); margin-inline: auto; }
+.blocks-board { width: 100%; aspect-ratio: 1 / 2; border: 9px solid #b2bea1; background: #e2e7d8; border-radius: 9px; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(20, 1fr); gap: 2px; touch-action: none; user-select: none; }
+.blocks-board:focus-visible { outline: 3px solid #a45224; outline-offset: 4px; }
+.blocks-board > span { background: #d4dcc7; border-radius: 2px; }
+.blocks-board > .block-ghost { background: transparent; box-shadow: inset 0 0 0 2px #738b5d; }
+.blocks-board > [class^=block-color], #blocks-next [class^=block-color] { box-shadow: inset 0 0 0 2px #ffffff25, inset 0 -3px #00000012; }
+.blocks-board .block-color-1, .block-color-1 { background: #6a968e; }
+.blocks-board .block-color-2, .block-color-2 { background: #c3ac66; }
+.blocks-board .block-color-3, .block-color-3 { background: #8d859b; }
+.blocks-board .block-color-4, .block-color-4 { background: #7f9e5c; }
+.blocks-board .block-color-5, .block-color-5 { background: #b87764; }
+.blocks-board .block-color-6, .block-color-6 { background: #69839a; }
+.blocks-board .block-color-7, .block-color-7 { background: #b7966b; }
+.blocks-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 26px; border-radius: 9px; background: #f5f3ebed; backdrop-filter: blur(3px); }
+.blocks-overlay h2 { font: 36px/1.1 Georgia, serif; margin: 20px 0; letter-spacing: -1px; }
+.blocks-overlay .eyebrow { font-size: 9px; }
+.blocks-overlay p { font-size: 13px; line-height: 1.7; }
+.blocks-overlay button { margin-top: 24px; min-width: 140px; }
+.blocks-controls { display: grid; grid-template-columns: repeat(4,1fr) 1.5fr; gap: 7px; margin-top: 14px; }
+.blocks-controls button { font-size: 19px; min-height: 44px; padding: 8px; }
+.blocks-controls button:last-child { font-size: 13px; }
+.blocks-game .play-toolbar { justify-content: space-between; }
+@media(max-width: 700px) {
+  .blocks-game .play-layout { gap: 18px; }
+  .blocks-game .play-intro { max-width: 360px; position: relative; }
+  .blocks-game .play-instructions { font-size: 11px; }
+  .blocks-next { margin-top: 16px; display: flex; align-items: center; gap: 15px; }
+  #blocks-next { margin-top: 0; grid-template-columns: repeat(var(--preview-size),16px); grid-auto-rows: 16px; gap: 2px; }
+}
