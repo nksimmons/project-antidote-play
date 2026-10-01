@@ -59,13 +59,13 @@ npm run build
 python3 -m http.server 4174 --bind 127.0.0.1 --directory dist
 ```
 
-GitHub Pages manages its own cache headers; no custom header configuration is required. Installed clients download a new release when the browser checks the service worker; use **Update ready** in the footer when offered. HTTPS is provided by the default `github.io` URL, enabling installation and offline play after the initial load. All three games are included in the offline release.
+GitHub Pages manages its own cache headers; no custom header configuration is required. Installed clients download a new release when the browser checks the service worker; use **Reload to update** in the update bar when offered. **Check for updates** requests a fresh check without clearing saved games. HTTPS is provided by the default `github.io` URL, enabling installation and offline play after the initial load. All three games are included in the offline release.
 
 ## Offline and release updates
 
-The service worker atomically precaches the full release, including all game assets, at the first successful visit. The footer confirms completion. Shipped assets are cache-first; unknown paths are not cached. No third-party requests are made by the application. An unsuccessful install leaves the prior release available. Offline availability requires that the browser retain site storage.
+The service worker atomically precaches the full release, including all game assets, at the first successful visit. The footer confirms completion. On deployed sites, shipped assets are cache-first; unknown paths are not cached. On localhost and loopback addresses, shipped assets are network-first with `cache: no-store`, falling back to the installed release if the development server is unavailable. This makes source edits appear on ordinary reloads while preserving local offline testing. No third-party requests are made by the application. An unsuccessful install leaves the prior release available. Offline availability requires that the browser retain site storage.
 
-Use `npm run build` for each release; it automatically versions the service worker. If deploying the source directory directly instead, update `VERSION` in `sw.js` yourself. Add every new game asset to `ASSETS`; missing files intentionally fail installation instead of creating a partially offline release. Keep old release assets available during deployment, and deploy atomically if your host supports it. Updated workers wait until the user selects **Update ready**, or all old tabs close. Game state is saved before animation, so accepting an update preserves the current board. Activation removes only old Antidote caches for this deployment path, leaving other apps and subdirectory deployments intact.
+Use `npm run build` for each release; it automatically versions the service worker. If deploying the source directory directly instead, update `VERSION` in `sw.js` yourself. Add every new game asset to `ASSETS`; missing files intentionally fail installation instead of creating a partially offline release. Keep old release assets available during deployment, and deploy atomically if your host supports it. The launcher and standalone games check on startup, when returning to the tab, when connectivity returns, and once a minute while visible. Workers are checked with `updateViaCache: none`. Updated workers wait until the user selects **Reload to update**, or all old tabs close. Accepting an update reloads other open arcade tabs as well to keep their code consistent with the active worker. Game state is saved before animation, so accepting an update preserves the current board. Activation removes only old Antidote caches for this deployment path, leaving other apps and subdirectory deployments intact.
 
 Deploy `dist/` to an HTTPS static host. Where you control response headers, serve `sw.js` and HTML with `Cache-Control: no-cache` and correct MIME types. Do not add analytics, external fonts, tracking, accounts, monetization, or CDN dependencies. Configure the host's request logging according to your privacy policy; application privacy does not disable host access logs.
 
@@ -86,8 +86,14 @@ The UI includes keyboard focus indicators, semantic navigation, reduced-motion s
 3. Reload `#/play/2048` and confirm the saved board and best score.
 4. In browser developer tools, go offline, reload the launcher and standalone game, and play.
 5. Check mobile widths, zoom, keyboard navigation, and reduced motion.
-6. Bump the worker version and reload online; verify the update button and preserved game state.
+6. Rebuild and publish a changed release; use **Check for updates**, then **Reload to update**, and verify preserved game state in both the launcher and standalone games.
 7. Play Sudoku using notes, erase, undo, check, and hints; confirm completion increments the solved count only once after reload.
 8. Play Blocks using movement, rotation, soft/hard drops, and pause; reload to confirm the board and best score, then check a game-over restart.
 
 MIT licensing permits reuse, including commercial forks. The project's own zero-monetization commitment remains a project policy.
+
+## If an older copy is stuck
+
+Older releases expose **Update ready** in the footer. Use it once to install the new update controls, or hard-refresh once to load the new client. Future releases show a prominent update bar. There is no need to clear site data, which would erase saved games. Adding a query string to a game URL does not bypass the production service-worker cache.
+
+For local source work, use `npm run dev`. A server pointed at `dist/` or a copied preview folder serves that built snapshot; rebuild (and recopy, if applicable) to change it. A browser refresh cannot rebuild a snapshot.

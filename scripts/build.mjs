@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const assets = ['index.html', 'styles.css', 'app.js', 'manifest.json', 'sw.js', 'icons', 'games', 'LICENSE'];
+const assets = ['index.html', 'styles.css', 'app.js', 'pwa.js', 'manifest.json', 'sw.js', 'icons', 'games', 'LICENSE'];
 
 async function listFiles(directory, prefix = '') {
   const files = [];

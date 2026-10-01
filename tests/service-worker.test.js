@@ -5,7 +5,7 @@ import { readFile, access } from 'node:fs/promises';
 
 const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
 const version = source.match(/const VERSION = '([^']+)'/)[1];
-function worker({ failInstall = false } = {}) {
+function worker({ failInstall = false, local = false, offline = false } = {}) {
   const events = {};
   const deleted = [];
   const requests = [];
@@ -13,10 +13,11 @@ function worker({ failInstall = false } = {}) {
   let claimed = false;
   let skipped = false;
   let network = 0;
+  let cacheMode;
   const context = {
     URL, Request,
     self: {
-      location: { href: 'https://example.test/arcade/sw.js' },
+      location: { href: local ? 'http://localhost:4173/arcade/sw.js' : 'https://example.test/arcade/sw.js' },
       addEventListener: (type, handler) => { events[type] = handler; },
       clients: { claim: async () => { claimed = true; } },
       skipWaiting: () => { skipped = true; },
@@ -29,10 +30,10 @@ function worker({ failInstall = false } = {}) {
       keys: async () => ['antidote-%2Farcade%2F-v0', `antidote-%2Farcade%2F-${version}`, 'antidote-%2Fother%2F-v0', 'unrelated-cache'],
       delete: async key => { deleted.push(key); },
     },
-    fetch: async () => { network++; return new Response('network'); },
+    fetch: async request => { network++; cacheMode = request.cache; if (offline) throw new Error('Offline'); return new Response('network'); },
   };
   vm.runInNewContext(source, context);
-  return { events, requests, deleted, get claimed() { return claimed; }, get skipped() { return skipped; }, get network() { return network; } };
+  return { events, requests, deleted, get claimed() { return claimed; }, get skipped() { return skipped; }, get network() { return network; }, get cacheMode() { return cacheMode; } };
 }
 
 test('install precaches every shipped asset using deployment-relative URLs', async () => {
@@ -40,7 +41,7 @@ test('install precaches every shipped asset using deployment-relative URLs', asy
   let task;
   sw.events.install({ waitUntil: promise => { task = promise; } });
   await task;
-  assert.equal(sw.requests.length, 29);
+  assert.equal(sw.requests.length, 30);
   for (const request of sw.requests) {
     assert.equal(request.cache, 'reload');
     assert.ok(request.url.startsWith('https://example.test/arcade/'));
@@ -92,4 +93,20 @@ test('updates activate early only on an explicit activation message', () => {
   assert.equal(sw.skipped, false);
   sw.events.message({ data: { type: 'ACTIVATE_UPDATE' } });
   assert.equal(sw.skipped, true);
+});
+
+test('localhost serves fresh source without the HTTP cache', async () => {
+  const sw = worker({ local: true });
+  let response;
+  sw.events.fetch({ request: new Request('http://localhost:4173/arcade/app.js'), respondWith: result => { response = result; } });
+  assert.equal(await (await response).text(), 'network');
+  assert.equal(sw.cacheMode, 'no-store');
+});
+
+test('localhost falls back to the installed release when the server is offline', async () => {
+  const sw = worker({ local: true, offline: true });
+  let response;
+  sw.events.fetch({ request: new Request('http://localhost:4173/arcade/index.html'), respondWith: result => { response = result; } });
+  assert.equal(await (await response).text(), 'cached release');
+  assert.equal(sw.network, 1);
 });

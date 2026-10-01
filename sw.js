@@ -1,10 +1,10 @@
 /* npm run build stamps this automatically. Bump manually for source-only deploys. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `antidote-${encodeURIComponent(BASE.pathname)}-`;
 const CACHE = `${PREFIX}${VERSION}`;
 const ASSETS = [
-  './', 'index.html', 'styles.css', 'app.js', 'manifest.json',
+  './', 'index.html', 'styles.css', 'app.js', 'pwa.js', 'manifest.json',
   'icons/favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'icons/maskable-512.png', 'games/2048/', 'games/2048/index.html',
   'games/2048/styles.css', 'games/2048/engine.js', 'games/2048/game.js',
@@ -49,6 +49,15 @@ self.addEventListener('fetch', event => {
   if (!PRECACHED.has(url.href)) return;
   event.respondWith((async () => {
     const cached = await (await caches.open(CACHE)).match(url.href);
+    // Local development should reflect source edits on an ordinary refresh.
+    // Keep the installed release as a fallback for deliberate offline testing.
+    if (['localhost', '127.0.0.1', '[::1]'].includes(BASE.hostname)) {
+      try {
+        const response = await fetch(new Request(request, { cache: 'no-store' }));
+        if (response.ok) return response;
+        if (!cached) return response;
+      } catch (error) { if (!cached) throw error; }
+    }
     return cached || fetch(request);
   })());
 });

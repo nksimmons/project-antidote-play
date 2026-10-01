@@ -1,15 +1,12 @@
+import { setupPWA } from './pwa.js';
 import { mountGame, readBest } from './games/2048/game.js';
 import { mountSudoku, readSolved } from './games/sudoku/game.js';
 import { mountBlocks, readBlocksBest } from './games/blocks/game.js';
 
 const main = document.querySelector('#main');
-const connection = document.querySelector('#connection');
 let disposeGame;
 let filter = 'all';
 let installPrompt;
-let registration;
-let offlineReady = false;
-let applyingUpdate = false;
 
 function renderLibrary() {
   main.innerHTML = `
@@ -83,37 +80,4 @@ installButton.addEventListener('click', async () => {
 window.addEventListener('appinstalled', () => { installPrompt = undefined; installButton.hidden = true; });
 if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) installButton.hidden = true;
 
-function updateConnection(message) {
-  connection.replaceChildren();
-  connection.append(document.createElement('i'), document.createTextNode(message || (offlineReady ? (navigator.onLine ? 'Ready for offline play' : 'Offline. Play on.') : 'Offline setup incomplete')));
-  if (registration?.waiting) {
-    const button = document.createElement('button');
-    button.textContent = 'Update ready ↻';
-    button.addEventListener('click', () => { applyingUpdate = true; registration.waiting?.postMessage({ type: 'ACTIVATE_UPDATE' }); });
-    connection.append(button);
-  }
-}
-window.addEventListener('online', () => updateConnection());
-window.addEventListener('offline', () => updateConnection());
-
-if ('serviceWorker' in navigator && window.isSecureContext) {
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (applyingUpdate) { location.reload(); return; }
-    offlineReady = true; updateConnection();
-  });
-  navigator.serviceWorker.register('./sw.js').then(reg => {
-    registration = reg;
-    offlineReady = !!reg.active;
-    updateConnection(offlineReady ? undefined : 'Saving arcade for offline play');
-    function watch(worker) {
-      if (!worker) return;
-      worker.addEventListener('statechange', () => {
-        if (worker.state === 'activated') { offlineReady = true; updateConnection(); }
-        else if (worker.state === 'installed') updateConnection(offlineReady ? undefined : 'Finishing offline setup');
-        else if (worker.state === 'redundant' && !offlineReady) updateConnection('Offline setup failed. Reload to retry.');
-      });
-    }
-    watch(reg.installing);
-    reg.addEventListener('updatefound', () => watch(reg.installing));
-  }).catch(() => updateConnection('Offline setup unavailable. Reload to retry.'));
-} else updateConnection('Offline installation needs HTTPS or localhost');
+setupPWA();
