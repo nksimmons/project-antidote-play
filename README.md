@@ -108,7 +108,7 @@ For local source work, use `npm run dev`. A server pointed at `dist/` or a copie
 Open `games/lexitrack/` or `games/stones-of-five/` from the library. Both are static pages and work under GitHub Pages repository paths. `#/play/lexitrack` and `#/play/stones-of-five` also redirect there. The original separate dedicated-host and Express/WebSocket servers are not deployed: each game's host also plays.
 
 1. Enter a name and start playing. LexiTrack can start solo; Stones needs a friend or at least one bot.
-2. To play with friends, choose **Invite friends**, then **Copy invite** or scan the QR code. Opening a player page without an invite cannot join a room.
+2. Multiplayer works best when everyone is on the same Wi-Fi or local network; internet access is still needed to connect. To play with friends, choose **Invite friends**, then **Copy invite** or scan the QR code. Opening a player page without an invite cannot join a room.
 3. Keep the host tab open and active. Guest refreshes reconnect with a room-specific session token and receive current authoritative state. Closing/reloading the host ends the room; there is no host migration or saved multiplayer match. Browser background suspension can delay timers/connections.
 4. If joining fails, check that the invitation is current and the host is online, then use **Retry connection**. Automatic retries are bounded and leave the old room before trying again. Actions made while disconnected are not queued for later replay.
 
