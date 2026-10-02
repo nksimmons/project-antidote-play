@@ -80,6 +80,8 @@ function initAvatarBuilder() {
   drawCanvas.addEventListener('pointerdown', onDrawStart);
   drawCanvas.addEventListener('pointermove', onDrawMove);
   drawCanvas.addEventListener('pointerup', onDrawEnd);
+  drawCanvas.addEventListener('pointercancel', onDrawEnd);
+  drawCanvas.addEventListener('lostpointercapture', onDrawEnd);
   drawCanvas.addEventListener('pointerleave', onDrawEnd);
 
   document.getElementById('btn-undo').addEventListener('click', () => {
@@ -237,7 +239,11 @@ function connectPeer(roomCode) {
       else sendFn({ type: 'reconnect', deviceId });
     },
     onData: processServerMessage,
-    onClose() { sendFn = null; },
+    onClose() {
+      sendFn = null;
+      const btn = document.getElementById('btn-join');
+      btn.disabled = false; btn.textContent = 'Join Game';
+    },
   });
 }
 
@@ -725,6 +731,7 @@ function attachBoardEvents() {
     }
     isDragging = false;
   });
+  board.addEventListener('pointercancel', () => { isDragging = false; clearSelection(); });
 }
 
 function getNeighbors(idx) {
@@ -868,21 +875,25 @@ function toast(text, type = 'success') {
 
 // --- Events ---
 document.getElementById('btn-join').addEventListener('click', () => {
+  const btn = document.getElementById('btn-join');
+  if (btn.disabled) return;
   const name = document.getElementById('player-name').value.trim();
   if (!name) {
+    toast('Enter your name to join.', 'error');
     document.getElementById('player-name').focus();
     return;
   }
   saveProfile(name, avatarChoice);
   const joinMsg = { type: 'player-join', name, avatar: avatarChoice, deviceId };
+  btn.disabled = true;
+  btn.textContent = sendFn ? 'Joining…' : 'Connecting…';
+  AntidoteMultiplayer.status('Joining the game. Keep the host tab open…');
   if (sendFn) {
     sendFn(joinMsg);
   } else {
     // Connection still opening (common on Safari / slow networks) — queue it
     pendingJoin = joinMsg;
-    const btn = document.getElementById('btn-join');
-    btn.textContent = 'Connecting…';
-    btn.disabled = true;
+    playerPeer?.retry();
   }
 });
 

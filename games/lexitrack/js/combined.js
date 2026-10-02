@@ -334,18 +334,23 @@ function initAvatarBuilder() {
     return { x: (src.clientX - r.left), y: (src.clientY - r.top) };
   }
   drawCanvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
     isDrawing = true; const p = getPos(e);
     currentStroke = { color: drawColor, width: 4, points: [p] };
     drawCanvas.setPointerCapture(e.pointerId);
   });
   drawCanvas.addEventListener('pointermove', e => {
     if (!isDrawing || !currentStroke) return;
+    e.preventDefault();
     currentStroke.points.push(getPos(e)); redrawCanvas();
   });
-  drawCanvas.addEventListener('pointerup', () => {
+  const onDrawEnd = () => {
     if (currentStroke) { drawStrokes.push(currentStroke); currentStroke = null; }
     isDrawing = false; updateAvatarPreview();
-  });
+  };
+  drawCanvas.addEventListener('pointerup', onDrawEnd);
+  drawCanvas.addEventListener('pointercancel', onDrawEnd);
+  drawCanvas.addEventListener('lostpointercapture', onDrawEnd);
   document.getElementById('btn-undo') && document.getElementById('btn-undo').addEventListener('click', () => { drawStrokes.pop(); redrawCanvas(); updateAvatarPreview(); });
   document.getElementById('btn-clear') && document.getElementById('btn-clear').addEventListener('click', () => { drawStrokes = []; redrawCanvas(); updateAvatarPreview(); });
 }
@@ -692,6 +697,7 @@ function attachBoardEvents() {
     if (isDragging && selectedPath.length >= 3) submitPath(); else clearSelection();
     isDragging = false;
   });
+  board.addEventListener('pointercancel', () => { isDragging = false; clearSelection(); });
 }
 function submitPath() {
   if (selectedPath.length < 3) { toast('Too short! (3+ letters)', 'error'); return; }

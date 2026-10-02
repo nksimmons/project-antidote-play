@@ -97,6 +97,8 @@ function initAvatarBuilder() {
   drawCanvas.addEventListener('pointerdown', onDrawStart);
   drawCanvas.addEventListener('pointermove', onDrawMove);
   drawCanvas.addEventListener('pointerup', onDrawEnd);
+  drawCanvas.addEventListener('pointercancel', onDrawEnd);
+  drawCanvas.addEventListener('lostpointercapture', onDrawEnd);
   drawCanvas.addEventListener('pointerleave', onDrawEnd);
   document.getElementById('btn-undo').addEventListener('click', () => { drawStrokes.pop(); redrawCanvas(); updateAvatarPreview(); });
   document.getElementById('btn-clear').addEventListener('click', () => { drawStrokes = []; redrawCanvas(); updateAvatarPreview(); });
@@ -170,7 +172,11 @@ function connect() {
       else conn.send({ type: 'reconnect', deviceId });
     },
     onData: handleServerMsg,
-    onClose() { conn = null; },
+    onClose() {
+      conn = null;
+      const btn = document.getElementById('btn-join');
+      btn.disabled = false; btn.textContent = 'Join Game';
+    },
   });
 }
 
@@ -218,7 +224,11 @@ function handleServerMsg(msg) {
       dismissUndoPrompt(); undoRequestActive = null; lastMoveWasMine = false;
       toast(msg.approved ? 'Move undone!' : 'Undo rejected', msg.approved ? 'success' : 'error'); break;
     case 'undo-pending': toast('Waiting for others to approve…', 'success'); break;
-    case 'error': toast(msg.message, 'error'); break;
+    case 'error':
+      toast(msg.message, 'error');
+      document.getElementById('btn-join').disabled = false;
+      document.getElementById('btn-join').textContent = 'Join Game';
+      break;
     case 'kicked':
       kicked = true; playerId = null; state = null; alert('You have been kicked.'); render(); break;
   }
@@ -322,7 +332,7 @@ function setupBoardInteraction() {
 
   canvas.addEventListener('pointerdown', (e) => {
     if (!state || state.phase !== 'playing' || state.currentTurnPlayerId !== playerId) return;
-    boardDragging = true; canvas.setPointerCapture(e.pointerId);
+    e.preventDefault(); boardDragging = true; canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!boardDragging) return; e.preventDefault();
@@ -441,18 +451,18 @@ document.getElementById('btn-join').addEventListener('click', () => {
   const btn = document.getElementById('btn-join');
   if (btn.disabled) return;
   const name = document.getElementById('player-name').value.trim();
-  if (!name) { document.getElementById('player-name').focus(); return; }
+  if (!name) { toast('Enter your name to join.', 'error'); document.getElementById('player-name').focus(); return; }
   saveProfile(name, avatarChoice);
   const joinMsg = { type: 'player-join', name, avatar: avatarChoice, deviceId };
+  btn.disabled = true;
+  btn.textContent = conn?.open ? 'Joining…' : 'Connecting…';
+  AntidoteMultiplayer.status('Joining the game. Keep the host tab open…');
   if (conn && conn.open) {
     conn.send(joinMsg);
-    btn.disabled = true;
-    setTimeout(() => { btn.disabled = false; }, 3000);
   } else {
     // Connection still opening (common on Safari) — queue it
     pendingJoin = joinMsg;
-    btn.textContent = 'Connecting…';
-    btn.disabled = true;
+    peer?.retry();
   }
 });
 document.getElementById('player-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-join').click(); });
