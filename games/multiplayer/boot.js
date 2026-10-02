@@ -6,8 +6,7 @@ import { setupPWA } from '../../pwa.js';
 const entry = document.querySelector('script[data-game]');
 const sessions = new Set();
 const status = message => { document.querySelector('#network-status').textContent = message; };
-let overrides = {};
-const config = () => ({ ...multiplayerConfig, ...overrides });
+const config = () => multiplayerConfig;
 const peers = createPeerClasses({ load: () => import('./vendor/trystero.js'), config, status });
 window.TrysteroHostPeer = class extends peers.HostPeer {
   constructor(appId) { super(appId); sessions.add(this); }
@@ -39,19 +38,6 @@ window.AntidoteMultiplayer = {
 
 document.querySelector('#retry-connection').addEventListener('click', () => {
   for (const session of sessions) session.retry?.();
-});
-document.querySelector('#network-settings').addEventListener('submit', event => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const relay = form.elements.relay.value.trim();
-  const turn = form.elements.turn.value.trim();
-  if ((relay && !/^wss:\/\//.test(relay)) || (turn && !/^turns?:[^\s]+$/.test(turn))) {
-    status('Use a wss:// signaling URL and a turn: or turns: relay URL.'); return;
-  }
-  overrides = {};
-  if (relay) overrides.relayConfig = { urls: [relay] };
-  if (turn) overrides.turnConfig = [{ urls: turn, username: form.elements.username.value, credential: form.elements.credential.value }];
-  status('Connection settings applied for this tab. Create an invite or retry joining. Both players must use the same signaling relay.');
 });
 document.querySelector('#copy-invite').addEventListener('click', async () => {
   const text = document.querySelector('#combined-join-url, #lobby-url')?.textContent;

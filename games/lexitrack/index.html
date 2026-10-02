@@ -229,7 +229,8 @@
     .btn-tool:active { background: var(--tile-border); }
 
     .combined-qr { text-align: center; margin: 1rem 0; }
-    .combined-qr img { width: 160px; height: 160px; border-radius: 8px; background: white; padding: 4px; }
+    .combined-qr img { width: auto; height: auto; max-width: 100%; border-radius: 0; background: white; padding: 0; image-rendering: pixelated; }
+    .combined-qr img[hidden] { display: none; }
     .combined-qr .qr-label { color: var(--text-dim); font-size: 0.85rem; margin-top: 0.4rem; }
     .combined-qr .qr-url { font-size: 0.75rem; color: var(--accent3); word-break: break-all; margin-top: 0.2rem; }
 
@@ -249,10 +250,7 @@
 <section class="network-panel" aria-label="Multiplayer connection">
 <p id="network-status" role="status">Solo play works offline. Invite friends to play online.</p>
 <button id="retry-connection" type="button" hidden>Retry connection</button>
-<details><summary>About multiplayer &amp; connection settings</summary>
-<p>Online play uses public Nostr signaling and STUN services to connect browsers. These services see connection metadata such as IP addresses. Game messages travel over encrypted WebRTC. Keep the host tab open: closing or reloading it ends the room. An invite gives access to your room; share it privately.</p>
-<p>If a connection fails on a restricted network, a TURN relay may be needed. Optional settings below apply only to this tab and new connections. Use temporary TURN credentials. Solo play and bots contact no multiplayer services.</p>
-<form id="network-settings"><label>Nostr relay URL<input name="relay" placeholder="wss://…" autocomplete="off"></label><label>TURN URL<input name="turn" placeholder="turns:…" autocomplete="off"></label><label>TURN username<input name="username" autocomplete="off"></label><label>TURN credential<input name="credential" type="password" autocomplete="off"></label><button>Apply settings</button></form></details></section>
+</section>
   <div class="player-layout">
 
     <!-- JOIN / AVATAR SCREEN -->
@@ -293,7 +291,7 @@
         <!-- QR code so others can join -->
         <div class="combined-qr">
           <p class="qr-label">Share this with other players:</p>
-          <div class="invite-controls"><button id="invite-friends" type="button">Invite friends</button><button id="copy-invite" type="button">Copy invite</button></div><img hidden id="combined-qr-img" class="qr-code-img" alt="Scan to join this room">
+          <div class="invite-controls"><button id="invite-friends" type="button">Invite friends</button><button id="copy-invite" type="button" hidden>Copy invite</button></div><img hidden id="combined-qr-img" class="qr-code-img" alt="Scan to join this room">
           <p class="qr-url" id="combined-join-url"></p>
         </div>
 

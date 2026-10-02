@@ -180,6 +180,7 @@ function initPeer() {
     showQrCode(buildPlayerUrl(id));
     document.getElementById('room-id').textContent = id;
     document.getElementById('lobby-url').textContent = buildPlayerUrl(id);
+    document.getElementById('copy-invite').hidden = false;
   });
   peer.on('connection', (conn) => {
     conn.on('open', () => {

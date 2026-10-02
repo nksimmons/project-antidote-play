@@ -3,14 +3,10 @@
 .site-header a { color:#204633; font-weight:700; text-decoration:none; }
 .network-panel { max-width:900px; margin:0 auto 12px; border:1px solid #d8ddcf; border-radius:10px; }
 .network-panel p { margin:6px 0; }
-.network-panel summary { cursor:pointer; font-weight:650; }
 .network-panel button,.pwa-updates button { font:inherit; border:1px solid #56735c; border-radius:6px; background:#fffdf8; color:#204633; padding:6px 12px; cursor:pointer; }
-.network-panel label { display:flex; flex-direction:column; gap:4px; }
-.network-panel input { font:inherit; padding:6px; border:1px solid #aaa; border-radius:4px; width:100%; min-width:0; }
-#network-settings { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:12px; }
 .pwa-updates { display:flex; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .update-available { background:#e3ecd8; }
-.network-panel [hidden] { display:none; }
+.network-panel [hidden], .invite-controls [hidden] { display:none; }
 .invite-controls { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px; }
 .invite-controls button { font:inherit; padding:10px 15px; background:#204633; color:white; border:0; border-radius:6px; cursor:pointer; }
 #copy-invite { background:#fffdf8; color:#204633; border:1px solid #204633; }

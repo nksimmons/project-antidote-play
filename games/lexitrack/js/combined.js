@@ -214,15 +214,18 @@ function handlePlayerAction(playerId, action) {
 // ─── Trystero Host ───────────────────────────────────────────────────────────
 function buildPlayerUrl(roomCode) { return AntidoteMultiplayer.inviteUrl(roomCode); }
 
-function showQrCode(url) {
+async function showQrCode(url) {
   const img = document.getElementById('combined-qr-img');
-  if (!img || typeof qrcode === 'undefined') return;
+  if (!img) return;
+  img.hidden = true;
   try {
     const qr = qrcode(0, 'M');
     qr.addData(url);
     qr.make();
-    img.src = qr.createDataURL(4, 4); img.hidden = false;
-  } catch (e) { console.warn('QR generation failed:', e); }
+    img.src = qr.createDataURL(4, 16);
+    await img.decode();
+    img.hidden = false;
+  } catch { AntidoteMultiplayer.status('Could not show the QR code. Use Copy invite to share the link.'); }
 }
 function bindSeat(connId, playerId) {
   rtcPeers.get(connId).playerId = playerId;
@@ -238,6 +241,7 @@ function initPeerHost() {
     showQrCode(playerUrl);
     const urlEl = document.getElementById('combined-join-url');
     if (urlEl) urlEl.textContent = playerUrl;
+    document.getElementById('copy-invite').hidden = false;
   });
   hostPeer.on('connection', (conn) => {
     const connId = conn.peer;

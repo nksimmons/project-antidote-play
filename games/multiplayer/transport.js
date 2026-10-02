@@ -41,7 +41,7 @@ export function createPeerClasses({ load, config = () => ({}), status = () => {}
       const library = await load();
       if (this.destroyed) return null;
       this.room = library.joinRoom({ ...config(), appId: this.appId }, roomId, {
-        onJoinError: () => status('Could not reach a peer. Check the invite and network; some networks need a TURN relay.'),
+        onJoinError: () => status('Could not reach a player. Check that both devices are online and using the current invite.'),
       });
       return library;
     }
@@ -90,7 +90,7 @@ export function createPeerClasses({ load, config = () => ({}), status = () => {}
       if (this.connection) throw new Error('This peer is already joining a room.');
       const connection = this.connection = new Connection();
       this.connections.set('host', connection);
-      connection.timer = setTimeout(() => connection.close(new Error('Connection timed out. Check that the host tab is open. A TURN relay may be needed.')), timeout);
+      connection.timer = setTimeout(() => connection.close(new Error('Connection timed out. Check that the host tab is open, then try again.')), timeout);
       this.start(invite, connection).catch(error => connection.close(error));
       return connection;
     }
@@ -133,7 +133,7 @@ export function connectWithRetry({ PlayerPeer, appId, invite, onOpen, onData, on
       failed = true; current.destroy(); connection = null; onClose();
       status(error?.message || 'Connection lost.');
       if (retries < maxRetries) timer = setTimeout(start, delay * 2 ** retries++);
-      else status('Could not connect. Ask the host for a fresh invite, check connection settings, then Retry connection.');
+      else status('Could not connect. Ask the host for a fresh invite, then Retry connection.');
     };
     current.on('error', fail);
     current.on('open', () => {

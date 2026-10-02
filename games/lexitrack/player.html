@@ -49,10 +49,7 @@
 <section class="network-panel" aria-label="Multiplayer connection">
 <p id="network-status" role="status">Joining the host. Online multiplayer uses the connection services described below.</p>
 <button id="retry-connection" type="button" hidden>Retry connection</button>
-<details><summary>About multiplayer &amp; connection settings</summary>
-<p>Online play uses public Nostr signaling and STUN services to connect browsers. These services see connection metadata such as IP addresses. Game messages travel over encrypted WebRTC. Keep the host tab open: closing or reloading it ends the room. An invite gives access to your room; share it privately.</p>
-<p>If a connection fails on a restricted network, a TURN relay may be needed. Optional settings below apply only to this tab and new connections. Use temporary TURN credentials. Solo play and bots contact no multiplayer services.</p>
-<form id="network-settings"><label>Nostr relay URL<input name="relay" placeholder="wss://…" autocomplete="off"></label><label>TURN URL<input name="turn" placeholder="turns:…" autocomplete="off"></label><label>TURN username<input name="username" autocomplete="off"></label><label>TURN credential<input name="credential" type="password" autocomplete="off"></label><button>Apply settings</button></form></details></section>
+</section>
   <div class="player-layout">
 
     <!-- JOIN / AVATAR SCREEN -->
