@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPeerClasses, connectWithRetry, parseInvite } from '../games/multiplayer/transport.js';
 import { roomFromLocation, sessionIdentity, safeAvatar } from '../games/multiplayer/session.js';
+import { multiplayerConfig } from '../games/multiplayer/config.js';
 
 const roomId = 'a'.repeat(32);
 const invite = `v1.${roomId}.host123456`;
@@ -68,6 +69,25 @@ test('a timed-out join closes once and retry replaces the room without replaying
   await new Promise(r => setTimeout(r, 60));
   assert.equal(f.rooms.length, 2); assert.equal(closed, 2);
   assert.ok(f.rooms.every(r => r.leaves === 1)); assert.equal(f.sent.length, 0);
+});
+
+test('hosts and retried guests retain TURN transports without replacing default STUN', async t => {
+  const f = fixture({ config: () => multiplayerConfig, timeout: 15 });
+  const host = new f.HostPeer('test');
+  const session = connectWithRetry({ ...f, appId: 'test', invite, onOpen() {}, onData() {}, delay: 5, maxRetries: 1 });
+  t.after(() => { host.destroy(); session.destroy(); });
+  await new Promise(r => setTimeout(r, 60));
+  assert.equal(f.rooms.length, 3);
+  for (const { config } of f.rooms) {
+    assert.equal(config.rtcConfig.iceTransportPolicy, 'all');
+    assert.equal(config.rtcConfig.iceServers, undefined); // Let Trystero append TURN to its STUN defaults.
+    const servers = config.turnConfig;
+    const urls = servers.flatMap(server => server.urls);
+    assert.ok(urls.some(url => /^turn:.*\?transport=udp$/.test(url)));
+    assert.ok(urls.some(url => /^turn:.*:443\?transport=tcp$/.test(url)));
+    assert.ok(urls.some(url => /^turns:.*:443\?transport=tcp$/.test(url)));
+    assert.ok(servers.every(server => server.username && server.credential));
+  }
 });
 
 test('refresh keeps a seat; rooms and tabs have distinct identities; unavailable storage still works', () => {

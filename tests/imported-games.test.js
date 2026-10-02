@@ -94,3 +94,141 @@ test('Pente rejects stale moves, prevents duplicate seats, and lets the host app
   assert.equal(run('undoRequest'), null);
   assert.equal(run('messages.some(m=>m.type==="undo-result"&&m.approved)'), true);
 });
+
+async function interactions(game, file) {
+  const elements = new Map(), messages = [], sent = [];
+  let connectionOptions, retries = 0;
+  function element(id) {
+    if (!elements.has(id)) {
+      const handlers = {};
+      elements.set(id, {
+        style: {}, value: '', disabled: false, textContent: '', handlers,
+        addEventListener(type, handler) { (handlers[type] ||= []).push(handler); },
+        fire(type, event = {}) { for (const handler of handlers[type] || []) handler(event); },
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 200 }),
+        getContext: () => new Proxy({}, { get: () => () => {} }),
+        setPointerCapture() {}, querySelectorAll: () => [], querySelector: () => null,
+        appendChild() {}, focus() { this.focused = true; },
+        classList: { add() {}, remove() {} },
+      });
+    }
+    return elements.get(id);
+  }
+  const context = vm.createContext({
+    console, setTimeout: () => 1, clearTimeout() {}, window: { devicePixelRatio: 2 },
+    document: { getElementById: element, createElement: element, querySelectorAll: () => [] },
+    AntidoteMultiplayer: {
+      room: 'invite', identity: () => 'seat', storage: { getItem: () => null, setItem() {} },
+      status: message => messages.push(message),
+      connect(options) { connectionOptions = options; return { retry() { retries++; } }; },
+    },
+  });
+  if (file === 'combined.js') {
+    const engineFile = game === 'lexitrack' ? 'engine.js' : 'game.js';
+    vm.runInContext(await readFile(new URL(`../games/${game}/js/${engineFile}`, import.meta.url), 'utf8'), context);
+  }
+  const source = await readFile(new URL(`../games/${game}/js/${file}`, import.meta.url), 'utf8');
+  const marker = file === 'player.js' ? (game === 'lexitrack' ? '// --- Init ---' : '// ── Init')
+    : (game === 'lexitrack' ? '// ─── Events' : '// ── Event listeners');
+  vm.runInContext(source.slice(0, source.indexOf(marker)), context);
+  return { element, messages, sent, run: code => vm.runInContext(code, context),
+    get options() { return connectionOptions; }, get retries() { return retries; } };
+}
+
+for (const game of ['lexitrack', 'stones-of-five']) {
+  for (const file of ['combined.js', 'player.js']) {
+    test(`${game} ${file} prevents canvas gestures and ends cancelled drawing`, async () => {
+      const f = await interactions(game, file);
+      f.run('redrawCanvas=()=>{}; updateAvatarPreview=()=>{}; initAvatarBuilder();');
+      const canvas = f.element('draw-canvas');
+      let prevented = 0;
+      const event = { pointerId: 1, clientX: 10, clientY: 20, preventDefault() { prevented++; } };
+      canvas.fire('pointerdown', event);
+      canvas.fire('pointermove', event);
+      assert.equal(prevented, 2);
+      assert.equal(f.run('currentStroke.points.length'), 2);
+      canvas.fire('pointercancel', event);
+      assert.equal(f.run('isDrawing'), false);
+      assert.equal(f.run('currentStroke'), null);
+      canvas.fire('pointermove', event);
+      assert.equal(prevented, 2);
+      canvas.fire('pointerdown', event);
+      canvas.fire('lostpointercapture', event);
+      assert.equal(f.run('isDrawing'), false);
+    });
+
+    if (game === 'stones-of-five') {
+      test(`${game} ${file} prevents board/pile gestures and stops cancelled drags`, async () => {
+        const f = await interactions(game, file);
+        f.run(file === 'player.js'
+          ? "playerId='me'; state={phase:'playing',currentTurnPlayerId:'me',board:[[0]]}; redrawGameBoard=()=>{};"
+          : "selfPlayerId='me'; selfState={currentTurnPlayerId:'me'}; gs={phase:'playing',board:[[0]]}; redrawBoard=()=>{};");
+        f.run('getIntersection=()=>({row:0,col:0}); setupBoardInteraction();');
+        const stone = f.element('stone');
+        let prevented = 0;
+        const event = { pointerId: 1, clientX: 10, clientY: 20,
+          target: { closest: () => stone }, preventDefault() { prevented++; } };
+        for (const id of ['game-board', 'stone-pile']) {
+          const target = f.element(id);
+          target.fire('pointerdown', event);
+          target.fire('pointermove', event);
+          assert.equal(prevented, 2);
+          target.fire('pointercancel', event);
+          target.fire('pointermove', event);
+          assert.equal(prevented, 2);
+          prevented = 0;
+        }
+        assert.equal(f.element('drag-floater').style.display, 'none');
+        assert.equal(stone.style.opacity, '');
+      });
+    }
+  }
+
+  test(`${game} Join gives immediate feedback, validates names, and recovers after failure`, async () => {
+    const f = await interactions(game, 'player.js');
+    f.run(game === 'lexitrack' ? 'connectPeer(roomParam);' : 'connect();');
+    const button = f.element('btn-join');
+    const name = f.element('player-name');
+    button.fire('click');
+    assert.equal(name.focused, true);
+    assert.equal(button.disabled, false);
+    name.value = 'Guest';
+    button.fire('click');
+    assert.equal(button.textContent, 'Connecting…');
+    assert.equal(button.disabled, true);
+    assert.equal(f.retries, 1);
+    assert.equal(f.run('pendingJoin.name'), 'Guest');
+    f.options.onClose();
+    assert.equal(button.textContent, 'Join Game');
+    assert.equal(button.disabled, false);
+    button.fire('click');
+    assert.equal(f.retries, 2);
+    f.options.onOpen({ open: true, send: message => f.sent.push(message) });
+    assert.equal(f.sent[0].type, 'player-join');
+    assert.equal(f.run('pendingJoin'), null);
+    f.run(game === 'lexitrack' ? "processServerMessage({type:'error',message:'Room full'});"
+      : "handleServerMsg({type:'error',message:'Room full'});");
+    assert.equal(button.disabled, false);
+    button.fire('click');
+    assert.equal(button.textContent, 'Joining…');
+    assert.equal(button.disabled, true);
+    assert.equal(f.sent.length, 2);
+  });
+}
+
+test('interactive game pages suppress root overscroll and keep touch-action disabled', async () => {
+  const read = path => readFile(new URL(`../games/${path}`, import.meta.url), 'utf8');
+  for (const page of ['index.html', 'player.html']) {
+    const lexitrack = await read(`lexitrack/${page}`);
+    assert.match(lexitrack, /html(?:,\s*body)?\s*\{\s*overscroll-behavior:\s*none/);
+    assert.match(lexitrack, /#draw-canvas\s*\{[^}]*touch-action:\s*none/);
+    const stones = await read(`stones-of-five/${page}`);
+    for (const id of ['draw-canvas', 'game-board']) {
+      assert.match(stones, new RegExp(`id="${id}"[^>]*touch-action:none`));
+    }
+  }
+  const stonesCSS = await read('stones-of-five/css/style.css');
+  assert.match(stonesCSS, /html,\s*body\s*\{\s*overscroll-behavior:\s*none/);
+  assert.match(stonesCSS, /\.pile-stone\s*\{[^}]*touch-action:\s*none/);
+  assert.match(await read('lexitrack/css/style.css'), /\.board\s*\{[^}]*touch-action:\s*none/);
+});

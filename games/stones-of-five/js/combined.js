@@ -132,6 +132,8 @@ function initAvatarBuilder() {
   drawCanvas.addEventListener('pointerdown', onDrawStart);
   drawCanvas.addEventListener('pointermove', onDrawMove);
   drawCanvas.addEventListener('pointerup', onDrawEnd);
+  drawCanvas.addEventListener('pointercancel', onDrawEnd);
+  drawCanvas.addEventListener('lostpointercapture', onDrawEnd);
   drawCanvas.addEventListener('pointerleave', onDrawEnd);
   document.getElementById('btn-undo').addEventListener('click', () => { drawStrokes.pop(); redrawCanvas(); updateAvatarPreview(); });
   document.getElementById('btn-clear').addEventListener('click', () => { drawStrokes = []; redrawCanvas(); updateAvatarPreview(); });
@@ -478,7 +480,7 @@ function setupBoardInteraction() {
     if (!pos) { previewPos = null; document.getElementById('btn-confirm').disabled = true; redrawBoard(); return; }
     previewPos = pos; document.getElementById('btn-confirm').disabled = false; redrawBoard();
   });
-  canvas.addEventListener('pointerdown', (e) => { if (!selfState || gs.phase !== 'playing' || selfState.currentTurnPlayerId !== selfPlayerId) return; boardDragging = true; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerdown', (e) => { if (!selfState || gs.phase !== 'playing' || selfState.currentTurnPlayerId !== selfPlayerId) return; e.preventDefault(); boardDragging = true; canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointermove', (e) => { if (!boardDragging) return; e.preventDefault(); const pos = getIntersection(canvas, e.clientX, e.clientY); if (pos && gs.board && gs.board[pos.row][pos.col] === 0) previewPos = pos; redrawBoard(); });
   canvas.addEventListener('pointerup', () => { if (!boardDragging) return; boardDragging = false; if (previewPos) document.getElementById('btn-confirm').disabled = false; });
   canvas.addEventListener('pointercancel', () => { boardDragging = false; });
